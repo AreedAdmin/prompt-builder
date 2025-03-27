@@ -141,9 +141,14 @@
         multiple
       />
       <button type="button" id="chooseFolderBtn" title="Choose folder">
-        <img src="data:image/svg+xml;utf8,\
-<svg xmlns='http://www.w3.org/2000/svg' fill='currentColor' viewBox='0 0 24 24'><path d='M10 4l2 2h8c1.1 0 2 .9 2 2v3h-2V8H4v10h5v2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2h6zm9 8v3h3v2h-3v3h-2v-3h-3v-2h3v-3h2z'/></svg>" 
-        style="width:18px;height:18px;vertical-align:middle;">
+        <!-- Replacing old icon with the provided new inline SVG: -->
+        <svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" style="width: 24px; height: 24px;">
+          <rect x="4" y="12" width="56" height="40" rx="4" stroke="black" stroke-width="4" fill="none"/>
+          <path d="M4 20H28L32 24H60V52C60 54.2091 58.2091 56 56 56H8C5.79086 56 4 54.2091 4 52V20Z" stroke="black" stroke-width="4" fill="none"/>
+          <circle cx="48" cy="20" r="8" fill="white" stroke="black" stroke-width="3"/>
+          <path d="M48 16V24" stroke="black" stroke-width="2" stroke-linecap="round"/>
+          <path d="M44 20H52" stroke="black" stroke-width="2" stroke-linecap="round"/>
+        </svg>
       </button>
       <p style="font-size:0.8rem; margin-top:0.5rem;">
         (Works in Chrome/Edge/Safari, not Firefox.)
@@ -252,4 +257,4 @@
     });
   </script>
 </body>
-</html> 
+</html>

@@ -4,11 +4,19 @@ import base64
 import tiktoken
 
 app = Flask(__name__)
+# You might already have a large max content length or other config here
+app.config['MAX_CONTENT_LENGTH'] = 2048 * 1024 * 1024
 
 enc = tiktoken.get_encoding("cl100k_base")
 
+# We'll keep a global structure if needed, or simply parse in each request
+# but after we use it, we'll reset to empty.
+
 @app.route('/', methods=['GET', 'POST'])
 def index():
+    # This function-level dictionary will reset on each request (once done).
+    # If you had a global structure, consider clearing it at the end.
+    root_tree = {}
     tree_html = ""
     prompt_text = ""
     token_count = 0
@@ -17,18 +25,13 @@ def index():
         # If user uploaded a folder
         if 'folderUpload' in request.files:
             uploaded_files = request.files.getlist('folderUpload')
-            root_tree = {}
             for f in uploaded_files:
-                relative_path = f.filename  # includes subfolders
+                relative_path = f.filename
                 raw_text = f.read().decode('utf-8', errors='replace')
                 b64_content = base64.b64encode(raw_text.encode('utf-8')).decode('utf-8')
-
-                parts = relative_path.replace('\\','/').split('/')
+                parts = relative_path.replace('\\', '/').split('/')
                 insert_into_tree(root_tree, parts, b64_content)
 
-            # The top folder name is the first folder in the user’s selection.
-            # If you want a single top-level name, you might guess from the first file’s
-            # root folder. For simplicity, we’ll label it "Uploaded Folder".
             top_name = "Uploaded Folder"
             tree_html = f"""
             <div class="folder-header">
@@ -37,7 +40,6 @@ def index():
             </div>
             """ + build_folder_tree_html(root_tree)
 
-        # If user clicked "Generate Prompt"
         if 'generate_prompt' in request.form:
             user_instructions = request.form.get('user_instructions', '')
             meta_prompt_text = request.form.get('meta_prompt_text', '')
@@ -57,12 +59,14 @@ def index():
                 parts.append(f"<user instructions>{user_instructions}</user instructions>")
             if use_meta and meta_prompt_text.strip():
                 parts.append(f"<meta prompt>{meta_prompt_text}</meta prompt>")
-
             for c in contents:
                 parts.append(f"<content>{c}</content>")
 
             prompt_text = "\n".join(parts)
             token_count = len(enc.encode(prompt_text))
+
+            # Once the prompt is generated, we can clear 'root_tree' or any leftover references:
+            root_tree.clear()  # Freed the dictionary of old file references
 
     return render_template('layout.html',
                            tree_html=tree_html,
@@ -70,12 +74,11 @@ def index():
                            token_count=token_count)
 
 def insert_into_tree(tree, parts, b64_content):
-    """Recursively insert file content (b64) into nested dict based on path segments."""
+    # Insert file content (base64) into nested dict structure
     if not parts:
         return
     head = parts[0]
     if len(parts) == 1:
-        # It's a file
         tree[head] = b64_content
     else:
         if head not in tree:
@@ -83,15 +86,10 @@ def insert_into_tree(tree, parts, b64_content):
         insert_into_tree(tree[head], parts[1:], b64_content)
 
 def build_folder_tree_html(tree):
-    """
-    Recursively build an HTML <ul> tree with expand/collapse arrows,
-    folder/file icons, and checkboxes for .txt files. Others are displayed
-    but still get a checkbox (you can adapt if you only want .txt).
-    """
     html = ['<ul class="folder-list">']
     for name, val in sorted(tree.items()):
         if isinstance(val, dict):
-            # subfolder
+            # It's a folder
             html.append(f"""
             <li class="folder-item">
               <div class="folder-row">
@@ -105,8 +103,7 @@ def build_folder_tree_html(tree):
             </li>
             """)
         else:
-            # file
-            # 'val' is the base64 content
+            # It's a file
             html.append(f"""
             <li class="file-item">
               <label>

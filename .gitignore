@@ -1,0 +1,58 @@
+# -----------------------------
+# Python & Flask-Related Ignores
+# -----------------------------
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+venv/
+.venv/
+env/
+ENV/
+build/
+dist/
+*.egg
+*.egg-info/
+.eggs/
+*.manifest
+*.spec
+
+# If you're using Jupyter notebooks
+.ipynb_checkpoints/
+
+# If you're storing secrets locally:
+instance/
+*.sqlite3
+*.db
+*.bak
+
+# If you use coverage or test artifacts:
+.coverage
+coverage.xml
+htmlcov/
+pytest_cache/
+
+# -----------------------------
+# Docker-Related Ignores
+# -----------------------------
+*.env       # if you store environment secrets
+docker-compose.override.yml
+docker-compose.*.yml
+
+# -----------------------------
+# OS-Specific or Editor Files
+# -----------------------------
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*.swn
+*.swm
+*.swx
+*.un~
+*.~lock.*
+*.log
+
+# VSCode or JetBrains
+.vscode/
+.idea/
