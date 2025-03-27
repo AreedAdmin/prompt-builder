@@ -1,0 +1,9 @@
+flask
+tiktoken 
+pyperclip 
+treelib 
+openai 
+python-dotenv
+psycopg2-binary
+pyperclip
+tiktoken

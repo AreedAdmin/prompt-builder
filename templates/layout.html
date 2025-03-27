@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Prompt Builder Tree Icons</title>
+  <style>
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body {
+      display: flex;
+      height: 100vh;
+      font-family: sans-serif; color:#333;
+    }
+    /* Sidebar */
+    .sidebar {
+      width: 300px;
+      background: #f3f3f3;
+      border-right: 1px solid #ddd;
+      padding: 12px;
+      overflow-y: auto;
+    }
+    .sidebar h3 {
+      margin-bottom: 0.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.3rem;
+    }
+    .sidebar h3 svg { width: 16px; height: 16px; fill: #333; }
+
+    /* Main */
+    .main { flex:1; display:flex; flex-direction:column; }
+
+    .top-bar {
+      padding: 0.5rem;
+      border-bottom:1px solid #ddd;
+      background:#fafafa;
+    }
+    .top-bar h1 { font-size:1.1rem; }
+
+    .content-area {
+      flex:1; overflow-y:auto; padding:1rem; display:flex; flex-direction:column; gap:1rem;
+      max-width:700px;
+    }
+    textarea { width:100%; max-width:600px; }
+
+    .prompt-output {
+      min-height:100px; border:1px solid #ccc; background:#fafafa; padding:0.5rem; white-space:pre-wrap;
+    }
+
+    .footer-bar {
+      border-top:1px solid #ddd; background:#fafafa; padding:0.5rem; display:flex; gap:1rem;
+    }
+    button {
+      padding:0.5rem 1rem; border:none; background:#007aff; color:#fff; border-radius:4px; cursor:pointer;
+    }
+    button.copy-btn { background:#55b957; }
+
+    /* Hidden input for folder upload */
+    #folderUpload {
+      display:none;
+    }
+    /* Icons for folder/file */
+    .icon {
+      display: inline-block;
+      width: 16px; height:16px;
+      margin-right: 4px;
+      vertical-align: middle;
+    }
+    .folder-icon {
+      background: url("data:image/svg+xml;utf8,\
+<svg fill='currentColor' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'><path d='M10 4l2 2h8c1.1 0 2 .9 2 2v9c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2h6z'/></svg>") no-repeat center;
+      background-size: contain;
+    }
+    .file-icon {
+      background: url("data:image/svg+xml;utf8,\
+<svg fill='currentColor' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'><path d='M14 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6z'/></svg>") no-repeat center;
+      background-size: contain;
+    }
+    /* Folder list / tree */
+    .folder-list {
+      list-style:none; padding-left:1em; margin-top:0.5rem;
+    }
+    .folder-item, .file-item { margin: 2px 0; }
+
+    .folder-row {
+      display:flex; align-items:center; gap:4px; cursor:pointer;
+    }
+    .folder-name {
+      margin-left:2px;
+    }
+    .arrow {
+      width:12px; display:inline-block; text-align:center; user-select:none;
+    }
+    .arrow::selection { background: none; }
+    .arrow.expanded::before {
+      content: '▼'; /* down arrow */
+    }
+    .arrow.collapsed::before {
+      content: '▶'; /* right arrow */
+    }
+    .folder-contents { margin-left:1.2rem; }
+    .folder-remove-btn {
+      background: none;
+      border: none;
+      color: #c00;
+      font-size: 1rem;
+      margin-left: auto;
+      cursor: pointer;
+    }
+    .folder-header {
+      display: flex;
+      align-items:center;
+      background:#eee;
+      padding: 4px;
+      border: 1px solid #ccc;
+      margin-bottom:4px;
+      user-select:none;
+    }
+    .folder-top-text {
+      font-weight:600; margin-right:1rem;
+    }
+  </style>
+</head>
+<body>
+  <form method="post" enctype="multipart/form-data" style="flex:1; display:flex;">
+    <!-- LEFT SIDEBAR -->
+    <div class="sidebar">
+      <h3>
+        <!-- Folder-plus icon for the choose button -->
+        <svg id="folderPlusIcon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M10 4l2 2h4v2h2V6c0-1.1-.9-2-2-2h-6zM4 6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h7v-2H4V8h4V6H4zm15 6h-2v-2h-2v2h-2v2h2v2h2v-2h2v-2z"/></svg>
+        <span>Folder Navigator</span>
+      </h3>
+      <p style="font-size:0.85rem;">
+        Select a local folder (<em>webkitdirectory</em>) to see .txt files:
+      </p>
+      <!-- The hidden folder input -->
+      <input
+        type="file"
+        name="folderUpload"
+        id="folderUpload"
+        webkitdirectory directory
+        multiple
+      />
+      <button type="button" id="chooseFolderBtn" title="Choose folder">
+        <img src="data:image/svg+xml;utf8,\
+<svg xmlns='http://www.w3.org/2000/svg' fill='currentColor' viewBox='0 0 24 24'><path d='M10 4l2 2h8c1.1 0 2 .9 2 2v3h-2V8H4v10h5v2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2h6zm9 8v3h3v2h-3v3h-2v-3h-3v-2h3v-3h2z'/></svg>" 
+        style="width:18px;height:18px;vertical-align:middle;">
+      </button>
+      <p style="font-size:0.8rem; margin-top:0.5rem;">
+        (Works in Chrome/Edge/Safari, not Firefox.)
+      </p>
+      <hr style="margin:1rem 0;" />
+      
+      <!-- The folder tree (if any) -->
+      {% if tree_html %}
+        {{ tree_html|safe }}
+      {% else %}
+        <p>No folder loaded yet.</p>
+      {% endif %}
+    </div>
+
+    <!-- RIGHT MAIN CONTENT -->
+    <div class="main">
+      <div class="top-bar">
+        <h1>Prompt Builder</h1>
+      </div>
+      <div class="content-area">
+        <section>
+          <h2>User Instructions</h2>
+          <textarea name="user_instructions" rows="3" placeholder="Enter instructions..."></textarea>
+        </section>
+
+        <section>
+          <h2>Meta Prompt Text</h2>
+          <textarea name="meta_prompt_text" rows="3" placeholder="Enter meta prompt text..."></textarea><br>
+          <label>
+            <input type="checkbox" name="use_meta_prompt" />
+            Include this meta prompt text in final prompt
+          </label>
+        </section>
+
+        <section>
+          <h2>Generated Prompt</h2>
+          <div class="prompt-output">{{ prompt_text }}</div>
+          <p>Token count: {{ token_count }}</p>
+        </section>
+      </div>
+      <div class="footer-bar">
+        <button type="submit" name="generate_prompt">Generate Prompt</button>
+        <button type="button" class="copy-btn" id="copyBtn">Copy Prompt</button>
+      </div>
+    </div>
+  </form>
+
+  <script>
+    const chooseFolderBtn = document.getElementById('chooseFolderBtn');
+    const folderUpload = document.getElementById('folderUpload');
+    if (chooseFolderBtn && folderUpload) {
+      chooseFolderBtn.addEventListener('click', () => {
+        folderUpload.click();
+      });
+      folderUpload.addEventListener('change', () => {
+        folderUpload.form.submit(); // auto-submit to load tree
+      });
+    }
+
+    // Copy prompt
+    const copyBtn = document.getElementById('copyBtn');
+    if (copyBtn) {
+      copyBtn.addEventListener('click', () => {
+        const outputDiv = document.querySelector('.prompt-output');
+        if (!outputDiv) return;
+        const text = outputDiv.textContent;
+        navigator.clipboard.writeText(text).then(() => {
+          alert("Prompt copied!");
+        }).catch(err => {
+          console.error("Copy failed:", err);
+        });
+      });
+    }
+
+    // Expand/collapse logic
+    document.addEventListener('click', (e) => {
+      // If user clicks an arrow
+      if (e.target.classList.contains('arrow')) {
+        e.preventDefault();
+        const arrow = e.target;
+        const folderContents = arrow.closest('.folder-item')?.querySelector('.folder-contents');
+        if (!folderContents) return;
+        if (arrow.classList.contains('expanded')) {
+          arrow.classList.remove('expanded');
+          arrow.classList.add('collapsed');
+          folderContents.style.display = 'none';
+        } else {
+          arrow.classList.remove('collapsed');
+          arrow.classList.add('expanded');
+          folderContents.style.display = '';
+        }
+      }
+    });
+
+    // Remove folder logic
+    document.addEventListener('click', (e) => {
+      if (e.target.classList.contains('folder-remove-btn')) {
+        e.preventDefault();
+        // Just remove the entire tree section
+        const container = e.target.closest('.folder-header');
+        if (container) {
+          container.nextElementSibling?.remove(); // remove the <ul> after .folder-header
+          container.remove(); // remove the header itself
+        }
+      }
+    });
+  </script>
+</body>
+</html> 
